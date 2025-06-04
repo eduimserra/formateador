@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formateador de textos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f7f9fc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: #1a202c;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4a5568;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .theme-toggle span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: grayscale(100%);
+        }
+
+        .theme-toggle:hover {
+            background: #2d3748;
+            transform: scale(1.1);
+        }
+
+        body.dark-mode .theme-toggle {
+            background: #4a5568;
+        }
+
+        body.dark-mode .theme-toggle:hover {
+            background: #718096;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .container {
+            background: #2d3748;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode h1 {
+            color: #e2e8f0;
+        }
+
+        .input-output-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .input-output-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-section,
+        .output-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode label {
+            color: #cbd5e0;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+            color: #2d3748;
+        }
+
+        body.dark-mode textarea {
+            background: #1a202c;
+            border-color: #4a5568;
+            color: #e2e8f0;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+            background: #ffffff;
+        }
+
+        body.dark-mode textarea:focus {
+            border-color: #63b3ed;
+            background: #2d3748;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        button {
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: #2d3748;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        body.dark-mode button {
+            background: #718096;
+        }
+
+        body.dark-mode button:hover {
+            background: #a0aec0;
+        }
+
+        .clear-button {
+            background: #718096;
+        }
+
+        .clear-button:hover {
+            background: #4a5568;
+        }
+
+        body.dark-mode .clear-button {
+            background: #4a5568;
+        }
+
+        body.dark-mode .clear-button:hover {
+            background: #718096;
+        }
+
+        .copy-button {
+            background: #4299e1;
+        }
+
+        .copy-button:hover {
+            background: #3182ce;
+        }
+
+        body.dark-mode .copy-button {
+            background: #3182ce;
+        }
+
+        body.dark-mode .copy-button:hover {
+            background: #4299e1;
+        }
+
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            background: #48bb78;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .status-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .instructions {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 3px solid #4299e1;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .instructions {
+            background: #1a202c;
+            border-left-color: #3182ce;
+        }
+
+        .instructions h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .instructions h3 {
+            color: #e2e8f0;
+        }
+
+        .instructions p {
+            color: #4a5568;
+            line-height: 1.6;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .instructions p {
+            color: #cbd5e0;
+        }
+    </style>
+</head>
+
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+        <span id="themeIcon">🌙</span>
+    </button>
+
+    <div class="container">
+        <h1>Formateador de textos</h1>
+
+        <div class="instructions">
+            <h3>Instrucciones</h3>
+            <p>Pega el texto con el formato original en el área de entrada y automáticamente se transformará al formato
+                de salida.</p>
+        </div>
+
+        <div class="input-output-wrapper">
+            <div class="input-section">
+                <label for="inputText">Texto de Entrada:</label>
+                <textarea id="inputText" placeholder="Pega aquí el texto con formato original...">Cuenta	01050715411715007093 
+Nombre	Juan Manuel Mata Marcano 
+Tipo de Cuenta	Corriente 
+Identificación	V15676168 (Cédula) 
+Banco	MERCANTIL 
+País	Venezuela 
+Monto (USD)	300,00 
+Remesa (VES)	37.500,00</textarea>
+            </div>
+
+            <div class="output-section">
+                <label for="outputText">Texto de Salida:</label>
+                <textarea id="outputText" readonly placeholder="El texto transformado aparecerá aquí..."></textarea>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button class="clear-button" onclick="clearAll()">Limpiar Todo</button>
+            <button class="copy-button" onclick="copyToClipboard()">Copiar Resultado</button>
+        </div>
+    </div>
+
+    <div class="status-message" id="statusMessage">¡Texto copiado al portapapeles!</div>
+
+    <script>
+        // Theme management
+        let isDarkMode = false;
+
+        function setThemeIcon() {
+            const themeIcon = document.getElementById('themeIcon');
+
+            if (isDarkMode) {
+                // Sun icon for dark mode
+                themeIcon.textContent = '☀️';
+            } else {
+                // Moon icon for light mode
+                themeIcon.textContent = '🌙';
+            }
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            const body = document.body;
+
+            if (isDarkMode) {
+                body.classList.add('dark-mode');
+            } else {
+                body.classList.remove('dark-mode');
+            }
+
+            setThemeIcon();
+        }
+
+        // Check if user prefers dark mode (this runs immediately)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            isDarkMode = true;
+        }
+
+        function transformText() {
+            const inputText = document.getElementById('inputText').value.trim();
+
+            if (!inputText) {
+                document.getElementById('outputText').value = '';
+                return;
+            }
+
+            // Parse the input text
+            const data = {};
+            const lines = inputText.split('\n');
+
+            lines.forEach(line => {
+                const parts = line.split('\t');
+                if (parts.length >= 2) {
+                    const key = parts[0].trim();
+                    const value = parts.slice(1).join('\t').trim();
+                    data[key] = value;
+                }
+            });
+
+            // Extract values with proper handling
+            const banco = data['Banco'] || '';
+            const nombre = data['Nombre'] || '';
+
+            // Extract identification number (remove the type in parentheses)
+            let identificacion = data['Identificación'] || '';
+            if (identificacion.includes('(')) {
+                identificacion = identificacion.split('(')[0].trim();
+            }
+
+            const cuenta = data['Cuenta'] || '';
+            const remesa = data['Remesa (VES)'] || '';
+
+            // Build output text according to the specified format
+            const outputText = `Tccvzla
+
+${banco}
+${nombre}
+${identificacion}
+${cuenta}
+
+${remesa}
+
+N/A
+
+Numero de atencion:`;
+
+            // Set the output
+            document.getElementById('outputText').value = outputText;
+        }
+
+        function clearAll() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputText').value = '';
+        }
+
+        function copyToClipboard() {
+            const outputText = document.getElementById('outputText').value;
+
+            if (!outputText) {
+                alert('No hay texto para copiar. Primero transforma el texto.');
+                return;
+            }
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(outputText).then(() => {
+                showStatusMessage();
+            }).catch(err => {
+                // Fallback for older browsers
+                const textArea = document.getElementById('outputText');
+                textArea.select();
+                document.execCommand('copy');
+                showStatusMessage();
+            });
+        }
+
+        function showStatusMessage() {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.classList.add('show');
+
+            setTimeout(() => {
+                statusMessage.classList.remove('show');
+            }, 3000);
+        }
+
+        // Transform on page load with the example
+        window.addEventListener('DOMContentLoaded', () => {
+            // Apply dark mode if needed
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+            }
+
+            setThemeIcon();
+            transformText();
+
+            // Add event listeners for automatic transformation
+            const inputTextArea = document.getElementById('inputText');
+
+            // Transform on input (typing)
+            inputTextArea.addEventListener('input', () => {
+                transformText();
+            });
+
+            // Transform on paste
+            inputTextArea.addEventListener('paste', () => {
+                // Small delay to ensure pasted content is processed
+                setTimeout(() => {
+                    transformText();
+                }, 10);
+            });
+        });
+    </script>
+</body>
+
+</html>
